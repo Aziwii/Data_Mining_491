@@ -5,94 +5,92 @@ import numpy as np
 def load_dataset(file_path):
     """
     Load the dataset from a CSV file.
-
-    Parameters:
-    file_path (str): The path to the CSV file.
-
-    Returns:
-    pd.DataFrame: Loaded DataFrame.
     """
-
     print("Loading dataset...")
     df = pd.read_csv(file_path, low_memory=False)
 
     # Explicit Row and Column counts
     print(f"\n========================================")
-    print(f"       DATASET SHAPE & METRICS         ")
-    print(f"========================================")
+    print(f"RAW DATASET SHAPE & METRICS")
     print(f"Total Rows:    {df.shape[0]:,}")
     print(f"Total Columns: {df.shape[1]:,}")
     print(f"========================================\n")
 
-    return df
+    #rename dictionary for CCHS variables to more descriptive names
+    CCHS_RENAME_DICT = {
+    # --- Demographics & Identifiers ---
+    "DHHGAGE": "age_group", # all
+    "DHH_SEX": "sex", # all
+    "INCDGHH": "household_income_group", # all
+    "SDCDGIMM": "immigrant_status", # all
+    "SDCDVABT": "aboriginal_identity", # all
+    "SDCDVFLA": "first_official_language", # all
+ 
 
+    # --- General Health & Stress ---
+    "GEN_01": "perceived_health", # all
+    "GEN_05": "perceived_mental_health",  # Target  # all
+    "GEN_10": "perceived_life_stress", # all
+    "GEN_15": "perceived_work_stress", # all
+    "GEN_20": "perceived_sense_belonging_community", # all
+    "MAC_05": "main_activity", # valid skip is school
+    
 
-def remove_columns(df, columns_to_keep):
-    """
-    Remove columns from the DataFrame that are not in the list of columns to keep.
+    # --- Life Satisfaction & Well-being ---
+    "LSM_01": "satisfaction_with_life", # all
+    "LSMDVSWL": "derived_life_satisfaction_scale", # all same as above but with a different name
 
-    Parameters:
-    df (pd.DataFrame): The input DataFrame.
-    columns_to_keep (list): List of column names to keep.
+    # --- Height, Weight & Body Composition ---
+    "HWTDGISW": "derived_bmi_class", #weight status based on BMI (over, under, normal, obese) # valid skip has 3000
+    "HWTDGBCC": "body_mass_index_bmi", # same as above but with a different name # valid skip has 4000
+    "WTP_50": "perceived_weight", # all
 
-    Returns:
-    pd.DataFrame: DataFrame with only the specified columns.
-    """
-    df = df[columns_to_keep]
+    # --- COVID-19 & General Context ---
+    "COV2_005": "mental_health_before_or_during_covid", # all (answers are in terms of now, much better now ex)
+
+    # --- Chronic Conditions ---
+    "CCC_05": "has_asthma", #all  
+    "CCC_80": "has_high_blood_pressure",#all 
+    "CCC_90": "has_mood_disorder_depression_bipolar",#all
+    "CCC_135": "has_diabetes",#all 
+    "CC1_140": "has_heart_disease",#all  
+    "CC1_145": "has_cancer",#all 
+    "CC1_155": "has_arthritis",#all 
+
+    # --- Screen Time & Sedentary (CSS) ---
+    "CSSG20": "smoking_frequency_30d", # Valid skips are non smokers, never smoked
+
+    # --- Electronic Cigarettes / Vaping (ECV) ---
+    "ECVG15": "vaping_frequency", # valid skips are non vapers, never vaped
+
+    # --- Alcohol Consumption (ALC) ---
+    "ALC_15": "alcohol_frequency_past_12_months", # valid skips are non drinkers past 12 months
+    "ALCDVTTM": "alcohol_total_drinks_per_week", #all (reg drinker, occasional drinker, none in 12 months)
+
+    # --- Cannabis Use (CAN) ---
+    "CAN_05C": "cannabis_use_past_12_months", # all 
+}
+
+    # filter the df to only include the columns that are in the dict
+    available_cols = [col for col in CCHS_RENAME_DICT.keys() if col in df.columns]
+    df_clean = df[available_cols].rename(columns=CCHS_RENAME_DICT)
 
     # Explicit Row and Column counts
     print(f"\n========================================")
     print(f"Dataset after removing unnecessary columns")
-    print(f"========================================")
-    print(f"Total Rows:    {df.shape[0]:,}")
-    print(f"Total Columns: {df.shape[1]:,}")
-    print(f"========================================\n")
-    return df
+    print(f"Total Rows:    {df_clean.shape[0]:,}")
+    print(f"Total Columns: {df_clean.shape[1]:,}")
+    print(f"Columns: {list(df_clean.columns)}")
+    print(f"\n========================================")
+
+    return df_clean
+
 
 def main():
     # Load the dataset
-    df = load_dataset('../raw_data/pumf_cchs.csv')
+    load_dataset('../raw_data/pumf_cchs.csv')
 
-    # remove the columns that are not needed for the analysis
-    columns_to_keep = [
-    "DHHGAGE",
-    "DHH_SEX",
-    "MAC_05",
-    "GEN_01",
-    "GEN_05",
-    "GEN_10",
-    "GEN_15",
-    "GEN_20",
-    "LSM_01",
-    "LSMDVSWL",
-    "HWTDGISW",
-    "HWTDGBCC",
-    "WTP_50",
-    "COV2_005",
-    "CCC_80",
-    "CCC_05",
-    "CCC_90",
-    "CCC_135",
-    "CC1_140",
-    "CC1_145",
-    "CC1_155",
-    "CSS_05",
-    "CSS_15",
-    "CSSG20",
-    "ECV_05",
-    "ECVG15",
-    "ALC_05",
-    "ALC_10",
-    "ALC_15",
-    "ALCDVTTM",
-    "CAN_05C",
-    "SDCDGIMM",
-    "SDCDVABT",
-    "SDCDVFLA",
-    "INCDGHH",
-]
-    
-    df = remove_columns(df, columns_to_keep)
+
 
 if __name__ == "__main__":
     main()
