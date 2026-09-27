@@ -153,8 +153,8 @@ def generate_report(df_clean, target_name):
 # 3. main pipeline
 def main():
     # 1. load raw files
-    raw_df = load_raw_data("../raw_data/17_18_cchs.csv")
-    # raw_df = load_raw_data("../raw_data/pumf_cchs.csv")
+    raw_df = load_raw_data("../raw_data/cchs_2018_raw.csv")
+    # raw_df = load_raw_data("../raw_data/cchs_2022_raw.csv")
 
     # 2. check flags
     check_module_flags(raw_df)
