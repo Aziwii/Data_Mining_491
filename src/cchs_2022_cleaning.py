@@ -24,3 +24,20 @@ SELECTED_2022_DICT = {
 }
 
 TARGET_COL = SELECTED_2022_DICT["GEN_05"]
+RAW_COLS = list(SELECTED_2022_DICT.keys())
+
+def load_raw_data(filepath): 
+    """Loads the raw CSV file."""
+    print("Loading raw dataset...")
+    df = pd.read_csv(filepath, low_memory=False)
+    print(f"Raw shape: {df.shape[0]:,} rows x {df.shape[1]:,} columns\n")
+    return df
+
+# def check_module_flags(raw_df):
+
+
+def main():
+    load_raw_data("../raw_data/pumf_cchs.csv")
+
+if __name__ == "__main__":
+    main()

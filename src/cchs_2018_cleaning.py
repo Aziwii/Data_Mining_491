@@ -78,7 +78,7 @@ def clean_and_prepare(raw_df, rename_dict):
 
     # Alcohol: 6 = Did not drink in past 12 months -> recode to 0
     if "ALC_015" in df.columns:
-        df["ALC_015"] = df["ALC_015"].replace([96], 0).replace([97, 98, 99], np.nan) 
+        df["ALC_015"] = df["ALC_015"].replace([96], 0).replace([97, 98, 99], np.nan)
 
     # Smoking: removing the nulls
     if "SMK_005" in df.columns:
@@ -134,11 +134,11 @@ def generate_report(df_clean, target_name):
     complete_cases = df_clean.dropna()
     print("-" * 50)
     print(f"Total Rows: {len(df_clean):,}")
-    print(f"Complete Cases (No NaNs): {len(complete_cases):,} ({len(complete_cases)/len(df_clean)*100:.1f}%)")
+    print(f"Non Null cases: {len(complete_cases):,} ({len(complete_cases)/len(df_clean)*100:.1f}%)")
 
     # totals for mental health answers 
     if target_name in complete_cases.columns:
-        print("\nTarget Variable Distribution (in Complete Cases):")
+        print("\n totals of answers for mental health (so we know what to expect):")
         target_dist = complete_cases[target_name].value_counts(sort=False)
         for val, count in target_dist.items():
             print(
