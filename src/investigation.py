@@ -12,8 +12,9 @@ key_cols = [
     "perceived_life_stress", 
 ]
 
+print(key_cols)
 # summary stats
-summary = df[key_cols].describe().T
+summary = df[key_cols].describe().T # pivot it to vertical
 # add median and var
 summary["median"] = df[key_cols].median()
 summary["variance"] = df[key_cols].var()
