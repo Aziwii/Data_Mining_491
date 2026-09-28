@@ -15,15 +15,14 @@ SELECTED_CCHS_DICT = {
     "GEN_005": "perceived_general_health", #clear 7, 8
     "GEN_020": "perceived_life_stress", #clear 7, 8
     "GEN_030": "community_belonging", #clear 7, 8, 9
-    "HWT_050": "perceived_weight", #clear 7, 8, 9
+    "HWTDGISW": "bmi_self_reported", #clear 6, 9
     # Lifestyle & Behaviors - done
     "SLPG005": "sleep_hours_per_night", #clear 96, 99
-    "SBE_005": "screen_time_workday", #clear 96, 97, 98, 99
     "SBE_010": "screen_time_non_workday", #clear 7, 8
-    "PAADVDYS": "active_days_past_week", # clear 96, 99
+    "PAA_045": "physical_activity_hours_7d", # clear 996, 997, 998, 999
     "PAADVAC2": "physical_activity_level", # clear 6, 9
     # Substance Use - done
-    "SMK_005": "smoking_type", #clear 7, 8
+    "SMKDVSTY": "smoking_type", #clear 7, 8
     "ALC_015": "alcohol_frequency", # change 96 to 0 (never), and clear 97, 98, 99
 }
 
@@ -71,38 +70,71 @@ def clean_and_prepare(raw_df, rename_dict):
     available_cols = [c for c in rename_dict.keys() if c in raw_df.columns] # filtering for cols that exist in df
     df = raw_df[available_cols].copy() # make a copy of cleaner df - removed other rows
 
-    # handle specific cleaning for the responses
-    #clean income
+    # HANDLE SPECIFIC RESPONSES
+    #=========== TARGETS & DEMOS ======================
+    # MENTAL HEALTH
+    if "GEN_015" in df.columns:
+        df["GEN_015"] = df["GEN_015"].replace({
+            5:4, 7:np.nan, 8:np.nan, 9:np.nan,
+            }) #combine the pool and fair mental health values to (4)
+
+    # AGE
+    if "DHHGAGE" in df.columns:
+        df["DHHGAGE"] = df["DHHGAGE"].replace({
+            1:1, 2:1, #12-17
+            3:2, 4:2, 5:2, 6:2, #18-34
+            7:3, 8:3, 9:3, #35-49
+            10:4, 11:4, 12:4, #50-64
+            13:5, 14:5, 15:5, 16:5, #65+
+            }) #combine the pool and fair mental health values to (4)
+        
+    #INCOME
     if "INCDGHH" in df.columns:
         df["INCDGHH"] = df["INCDGHH"].replace([9], np.nan) 
 
-    # Alcohol: 6 = Did not drink in past 12 months -> recode to 0
-    if "ALC_015" in df.columns:
-        df["ALC_015"] = df["ALC_015"].replace([96], 0).replace([97, 98, 99], np.nan)
+    # WORK OR NOT
+    if "MACG005" in df.columns:
+        df["MACG005"] = df["MACG005"].replace({
+            1:1, 2:0, 3:0, 4:0, 5:0, 6:0, 97:np.nan, 98:np.nan, 99:np.nan,
+            }) #working=1 notworking=0
 
-    # Smoking: removing the nulls
-    if "SMK_005" in df.columns:
-        df["SMK_005"] = df["SMK_005"].replace([7,8], np.nan)
-
-    # SCreen time workday: convert 6 and 96 to 0, not at work or school
-    if "SBE_005" in df.columns:
-        df["SBE_005"] = df["SBE_005"].replace([6, 96], 0) 
-
-    # physical activity: remove nulls
-    if "PAADVAC2" in df.columns:
-        df["PAADVAC2"] = df["PAADVAC2"].replace([6,9], np.nan)
-
-    #Clean the rest of the cols
-    health_cols = ["GEN_005", "GEN_020", "GEN_030", "HWT_050", "GEN_015", "SBE_010"]
+    #=========== STRESS, SOCIAL, HEALTH ======================
+    #HEALTH COLS
+    health_cols = ["GEN_005", "GEN_020", "GEN_030", "SBE_010"]
     health_codes_to_clean = [7, 8, 9]
     #clean the lifestyle cols
     health_targets = [col for col in health_cols if col in df.columns]
     df[health_targets] = df[health_targets].replace(health_codes_to_clean, np.nan)
 
-    other_cols = ["SLPG005", "MACG005", "PAADVDYS"]
-    other_codes_to_clean = [96, 97, 98, 99]
-    other_targets = [col for col in other_cols if col in df.columns]
-    df[other_targets] = df[other_targets].replace(other_codes_to_clean, np.nan)
+    #=========== PHYSCIAL & SLEEP & WEIGHT ======================
+    # PHYS ACT LEVEL
+    if "PAADVAC2" in df.columns:
+        df["PAADVAC2"] = df["PAADVAC2"].replace([6,9], np.nan)
+
+    # PHYS ACT HOURS
+    if "PAA_045" in df.columns:
+        df["PAA_045"] = df["PAA_045"].replace([996,997,998, 999], np.nan)
+
+    # SLEEP
+    if "SLPG005" in df.columns:
+        df["SLPG005"] = df["SLPG005"].replace([96, 99], np.nan)
+
+    # BMI
+    if "HWTDGISW" in df.columns:
+        df["HWTDGISW"] = df["HWTDGISW"].replace({
+            1:1, 2:1, 3:2, 4:2, 6:np.nan, 9:np.nan,
+            }) #1=underweight/normal, 2=overweight/obeseClass1,2,3
+
+    #=========== ALC & SMK ======================
+    # ALC
+    if "ALC_015" in df.columns:
+        df["ALC_015"] = df["ALC_015"].replace({
+            96:0, 97:np.nan, 98:np.nan, 99:np.nan, #0=never
+            }) #1=<once a mo, 7=everyday
+        
+    # SMK 
+    if "SMKDVSTY" in df.columns: #1=daily, 6=never
+        df["SMKDVSTY"] = df["SMKDVSTY"].replace([99], np.nan)
 
     # rename to english
     df.rename(columns=rename_dict, inplace=True) #applies to existing df
@@ -128,7 +160,7 @@ def generate_report(df_clean, target_name):
             "Percent_Complete": pct_complete.round(1).values,
         }
     )
-    print(report_df.to_string(index=False))
+    print(report_df.to_string(index=False)) #hide the row nums
 
     # drop all nan and check counts
     complete_cases = df_clean.dropna()
@@ -168,7 +200,7 @@ def main():
     #export the clean set to clean_data dir
     output_path = "../clean_data/cchs_2018_cleaned.csv"
     df_usable.to_csv(output_path, index=False)
-    print(f"Successfully saved {len(df_usable):,} to {output_path}")
+    print(f"Successfully saved {len(df_usable):,} rows to {output_path}")
 
 
 if __name__ == "__main__":
