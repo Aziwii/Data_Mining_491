@@ -2,7 +2,11 @@ import pandas as pd
 
 # load clean set
 df18 = pd.read_csv("../clean_data/cchs_2018_cleaned.csv")
+if df18.empty:
+    print("Warning: The 2018 dataset is empty. Please check the file path and contents.")
 df22 = pd.read_csv("../clean_data/cchs_2022_cleaned.csv")
+if df22.empty:
+    print("Warning: The 2022 dataset is empty. Please check the file path and contents.") 
 
 SELECTED_2018_DICT = {
     # Target - done
