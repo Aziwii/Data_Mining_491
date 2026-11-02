@@ -25,6 +25,16 @@ def load_and_split_data(filename):
     X_train, X_val, y_train, y_val, X_test_2022, y_test_2022
     """
     df = pd.read_csv(filename)
+    # narrowed down list to significant features
+    selected_features = [
+        "perceived_life_stress",
+        "community_belonging",
+        "screen_time_non_workday",
+        "perceived_general_health",
+        "age_group",
+        "household_income_group",
+        "sex",
+    ]
 
 
     #create binary target - evaluate to either 0 = good, very good, excellent | 1 = fair, poor
@@ -37,10 +47,10 @@ def load_and_split_data(filename):
     #define the features - drop target and year
     cols_to_drop = ['perceived_mental_health', 'year', 'target_value']
 
-    X_2018 = df18.drop(columns=(cols_to_drop)) #features
+    X_2018 = df18[selected_features] #features
     y_2018 = df18["target_value"] #target set
     
-    X_test_2022 = df22.drop(columns=(cols_to_drop)) #features
+    X_test_2022 = df22[selected_features] #features
     y_test_2022 = df22['target_value'] #target
 
     #split the data, X/y_train get 80% ||| X/y_val get 20% - - - both of 2018
@@ -56,18 +66,17 @@ def build_preprocessor():
     
     
     """
-    categorical_cols = [
-        'province', 
-        'smoking_type', 
-        'sex', 
-        'main_activity'
+    # narrowed down
+    categorical_cols = ['sex']
+
+    numeric_cols = [
+        "perceived_life_stress",
+        "community_belonging",
+        "screen_time_non_workday",
+        "perceived_general_health",
+        "age_group",
+        "household_income_group",
     ]
-    numeric_cols = ['age_group',
-       'household_income_group', 'perceived_general_health',
-       'perceived_life_stress', 'community_belonging', 'bmi_self_reported',
-       'sleep_hours_per_night', 'screen_time_non_workday',
-       'physical_activity_hours_7d', 'physical_activity_level',
-       'alcohol_frequency']
 
     # need to scale the numerical cols and need to encode the categorical cols
     #Onehot turns labels into binary yes or nos
@@ -150,13 +159,13 @@ def evaluate_temporal_drift(best_pipeline, X_2022, y_2022):
 
 
 def main():
-    # 1. Load and split data
+    # 1 load and split the data
     X_train, X_val, y_train, y_val, X_test_2022, y_test_2022 = load_and_split_data("../clean_data/cchs_2018_2022_combined.csv")
     
-    # 2. Build preprocessing pipeline
+    # 2. build preprocessing pipeline
     preprocessor = build_preprocessor()
 
-    # Fit on training data and transform it
+    # fit on training data and transform it
     X_train_transformed = preprocessor.fit_transform(X_train)
 
     print("Preprocessing Check:")
@@ -170,7 +179,7 @@ def main():
     #     print(f" {i:2d}. {name}")
 
 
-    # 3. Train & benchmark baseline models on 2018
+    # 3. train models on 2018
     boost_scale_weight = (y_train == 0).sum() / (y_train == 1).sum()
     models_dict = {
         "regression" : LogisticRegression(class_weight="balanced", max_iter=1000, random_state=42 ),
@@ -178,7 +187,7 @@ def main():
         "xgboost" : XGBClassifier(scale_pos_weight=boost_scale_weight, random_state=42, eval_metric="logloss")
     }
 
-    # 4. Evaluate best model on 2022
+    # 4. evaluate best model on 2022
     trained_pipelines = run_model_benchmark(models_dict, preprocessor, X_train, y_train, X_val, y_val)
     evaluate_temporal_drift(trained_pipelines["regression"], X_test_2022, y_test_2022)
 

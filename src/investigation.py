@@ -68,9 +68,33 @@ summary18["variance"] = df18[cols_2018].var()
 summary22["median"] = df22[cols_2022].median()
 summary22["variance"] = df22[cols_2022].var()
 
+# Scale Direction Dictionary
+FEATURE_SCALES = {
+    "perceived_mental_health": "1 = Excellent  -->  4 = Fair/Poor  (HIGHER = WORSE)",
+    "perceived_general_health": "1 = Excellent  -->  5 = Poor  (HIGHER = WORSE)",
+    "perceived_life_stress": "1 = Not at all  -->  5 = Extreme  (HIGHER = MORE STRESS)",
+    "community_belonging": "1 = Very strong  -->  4 = Very weak  (HIGHER = WEAKER)",
+    "screen_time_non_workday": "1 = < 2 hours  -->  5 = 8+ hours  (HIGHER = MORE SCREEN TIME)",
+    "sleep_hours_per_night": "1 = < 4 hours  -->  11 = 12+ hours  (HIGHER = MORE SLEEP)",
+    "physical_activity_hours_7d": "0 hours  -->  70+ hours  (HIGHER = MORE EXERCISE)",
+    "physical_activity_level": "1 = Active  -->  3 = Inactive  (HIGHER = LESS ACTIVE)",
+    "smoking_type": "1 = Daily smoker  -->  6 = Never smoked  (HIGHER = LESS SMOKING)",
+    "alcohol_frequency": "0 = Never  -->  7 = Daily  (HIGHER = MORE DRINKING)",
+    "household_income_group": "1 = Lowest  -->  5 = Highest  (HIGHER = MORE INCOME)",
+    "age_group": "1 = Youth (12-17)  -->  5 = Seniors (65+)  (HIGHER = OLDER)",
+    "main_activity": "0 = Not working/Retired  -->  1 = Working  (HIGHER = EMPLOYED)",
+    "bmi_self_reported": "1 = Normal/Under  -->  2 = Overweight/Obese  (HIGHER = HIGHER BMI)",
+}
 
+# Print the reference guide
+print("\n" + "=" * 80)
+print("FEATURE SCALE & DIRECTION REFERENCE GUIDE")
+print("=" * 80)
+for feature, scale_info in FEATURE_SCALES.items():
+    print(f"{feature:28s} : {scale_info}")
+print("=" * 80 + "\n")
 
 # clean table viewing
-print(summary22[["mean", "median", "std", "min", "25%", "75%", "max", "variance"]].round(2))
+print(summary18[["mean", "median", "std", "min", "25%", "75%", "max", "variance"]].round(2))
 print("\n--------------------------------")
 print(summary22[["mean", "median", "std", "min", "25%", "75%", "max", "variance"]].round(2))
